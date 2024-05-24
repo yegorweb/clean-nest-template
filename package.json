@@ -30,6 +30,7 @@
     "cookie-parser": "^1.4.6",
     "easy-yandex-s3": "^2.0.0",
     "mongoose": "^8.4.0",
+    "mongoose-autopopulate": "^1.1.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
   },
