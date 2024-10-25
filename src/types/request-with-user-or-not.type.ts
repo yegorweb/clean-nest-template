@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { UserFromClient } from "src/user/interfaces/user-from-client.interface";
+import { User } from "src/user/interfaces/user.interface";
 
-type RequestWithUserOrNot = Request & { user: UserFromClient | undefined }
+type RequestWithUserOrNot = Request & { user: User | undefined }
 export default RequestWithUserOrNot

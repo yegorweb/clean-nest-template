@@ -1,10 +1,17 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
+import { Model } from 'mongoose';
+import { AccessToken } from 'src/token/interfaces/access-token.interface';
+import { UserClass } from 'src/user/schemas/user.schema';
 
 @Injectable()
 export class TryToGetUser implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    @InjectModel('User') private UserModel: Model<UserClass>
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest()
@@ -12,9 +19,11 @@ export class TryToGetUser implements CanActivate {
     const token = this.extractTokenFromHeader(request)
     
     try {
-      const payload = await this.jwtService.verifyAsync(token, { secret: process.env.JWT_ACCESS_SECRET })
+      const user = await this.jwtService.verifyAsync(token, { secret: process.env.JWT_ACCESS_SECRET }) as AccessToken
 
-      request.user = payload
+      if (user._id) {
+        request.user = await this.UserModel.findById(user._id)
+      }
     } catch {}
 
     return true

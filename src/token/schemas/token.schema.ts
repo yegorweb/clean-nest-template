@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 
 export type TokenDocument = HydratedDocument<TokenClass>
 
@@ -9,7 +9,14 @@ export class TokenClass {
     type: String, 
     required: true 
   })
-  refreshToken: string
+  token: string
+
+  @Prop({
+    type: SchemaTypes.ObjectId,
+    ref: 'User',
+    required: true
+  })
+  user: Types.ObjectId
 }
 
 export const TokenSchema = SchemaFactory.createForClass(TokenClass)

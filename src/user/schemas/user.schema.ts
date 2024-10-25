@@ -10,7 +10,7 @@ export class UserClass {
     required: true,
     min: 2
   })
-  fullname: string
+  name: string
 
   @Prop({ 
     type: String, 

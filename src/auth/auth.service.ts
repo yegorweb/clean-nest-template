@@ -4,58 +4,56 @@ import { Model } from 'mongoose'
 import ApiError from 'src/exceptions/errors/api-error'
 import { InjectModel } from '@nestjs/mongoose'
 import { UserClass } from 'src/user/schemas/user.schema'
-import { User } from 'src/user/interfaces/user.interface'
 import { UserFromClient } from 'src/user/interfaces/user-from-client.interface'
-import { RolesService } from 'src/roles/roles.service'
 import * as bcrypt from 'bcrypt'
+import { User } from 'src/user/interfaces/user.interface'
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel('User') private UserModel: Model<UserClass>,
     private TokenService: TokenService,
-    private RolesService: RolesService
   ) {}
 
-  async registration(user: User | UserFromClient) {
-    const candidate = await this.UserModel.findOne({ email: user.email })
+  async registration(user: Partial<UserFromClient>) {
+    let candidate = await this.UserModel.findOne({ email: user.email }).lean()
 
     if (candidate)
-      throw ApiError.BadRequest(`Пользователь с почтой ${user.email} уже существует`)
-
+      throw ApiError.BadRequest(`Пользователь с почтой ${user.email} уже есть`)
     if (user.password.length < 8)
-      throw ApiError.BadRequest('Слишком короткий пароль')
+      throw ApiError.BadRequest('Короткий пароль')
 
-    const password = await bcrypt.hash(user.password, 3)
-    const created_user = (await this.UserModel.create(Object.assign(user, { password }))).toObject()
+    let password = await bcrypt.hash(user.password, 3)
+    let createdUser = await this.UserModel.create(Object.assign(user, { password, roles: [] }))
+
+    delete createdUser.password
  
-    const tokens = this.TokenService.generateTokens(created_user)
-    await this.TokenService.saveToken(tokens.refreshToken)
+    let tokens = this.TokenService.generateTokens({ _id: createdUser._id })
+    await this.TokenService.saveToken(tokens.refreshToken, createdUser._id)
     
     return {
       ...tokens,
-      user: created_user
+      user: createdUser
     }  
   }  
 
   async login(email: string, password: string) {
-    const user = (await this.UserModel.findOne({ email })).toObject()
+    let user = await this.UserModel.findOne({ email }).lean()
   
-    if (!user) {
-      throw ApiError.BadRequest('Пользователь с таким email не найден')
-    }
-  
+    if (!user)
+      throw ApiError.BadRequest('Пользователь не найден')
     if (user.password.length < 8)
-      throw ApiError.BadRequest('Слишком короткий пароль')
+      throw ApiError.BadRequest('Короткий пароль')
     
-    const isPassEquals = await bcrypt.compare(password, user.password)
-
+    let isPassEquals = await bcrypt.compare(password, user.password)
     if (!isPassEquals) {
       throw ApiError.BadRequest('Неверный пароль')
     }
+
+    delete user.password
   
-    const tokens = this.TokenService.generateTokens(user)
-    await this.TokenService.saveToken(tokens.refreshToken)
+    let tokens = this.TokenService.generateTokens({ _id: user._id })
+    await this.TokenService.saveToken(tokens.refreshToken, user._id)
   
     return {
       ...tokens,
@@ -63,54 +61,53 @@ export class AuthService {
     }      
   }  
 
-  async refresh(refreshToken: string) {
-    if (!refreshToken)
+  async refresh(oldRefreshToken: string) {
+    if (!oldRefreshToken)
       throw ApiError.UnauthorizedError()
 
-    const userData = this.TokenService.validateRefreshToken(refreshToken)
-    const tokenFromDb = await this.TokenService.findToken(refreshToken)
+    let userId = this.TokenService.validateRefreshToken(oldRefreshToken)._id
+    let tokenFromDb = await this.TokenService.findToken(oldRefreshToken)
 
-    if (!userData && !tokenFromDb)
+    if (!userId || !tokenFromDb)
       throw ApiError.UnauthorizedError()
 
-    const user = (await this.UserModel.findById(userData._id)).toObject()
+    let user = await this.UserModel.findById(userId, { password: 0 }).lean()
 
-    if (userData.password !== user.password)
-      throw ApiError.AccessDenied('Аутентификация провалена. Пароль изменен')
+    await this.TokenService.removeToken(oldRefreshToken)
 
-    await this.TokenService.removeToken(refreshToken)
-
-    const tokens = this.TokenService.generateTokens(user)
-    await this.TokenService.saveToken(tokens.refreshToken)
+    let tokens = this.TokenService.generateTokens({ _id: user._id })
+    await this.TokenService.saveToken(tokens.refreshToken, user._id)
  
     return {
       ...tokens,
-      user: user
+      user
     }
   }
 
-  async resetPassword(password: string, token: string, user_id: any) {
+  async resetPassword(password: string, resetToken: string, userId: any) {
     try {
-      await this.validateEnterToResetPassword(user_id, token)
+      await this.validateEnterToResetPassword(userId, resetToken)
       
-      const hashPassword = await bcrypt.hash(password, 3)
-      const user = await this.UserModel.findByIdAndUpdate(user_id, { password: hashPassword })
+      let hashPassword = await bcrypt.hash(password, 3)
+      let user = await this.UserModel.findByIdAndUpdate(userId, { password: hashPassword })
 
-      const tokens = this.TokenService.generateTokens(user)
-      await this.TokenService.saveToken(tokens.refreshToken)
+      await this.TokenService.removeAllTokensUserOwn(user._id)
+
+      let tokens = this.TokenService.generateTokens({ _id: user._id })
+      await this.TokenService.saveToken(tokens.refreshToken, user._id)
 
       return {
         ...tokens,
-        user: user
+        user
       }
     } catch (error) {
       return null
     }
   }
 
-  async validateEnterToResetPassword(user_id: any, token: string) {
-    let candidate = await this.UserModel.findById(user_id)
-    if (!candidate) throw ApiError.BadRequest('Пользователь с таким _id не найден')
+  async validateEnterToResetPassword(userId: any, token: string) {
+    let candidate = await this.UserModel.findById(userId)
+    if (!candidate) throw ApiError.BadRequest('Пользователь не найден')
 
     let secret = process.env.JWT_RESET_SECRET + candidate.password
     let result = this.TokenService.validateResetToken(token, secret)
@@ -125,21 +122,19 @@ export class AuthService {
     if (!candidate)
       throw ApiError.BadRequest('Пользователь с таким email не найден')
 
-    const secret = process.env.JWT_RESET_SECRET + candidate.password
-    const token = this.TokenService.createResetToken(candidate, secret)
+    let secret = process.env.JWT_RESET_SECRET + candidate.password
+    let token = this.TokenService.createResetToken({ _id: candidate._id }, secret)
 
-    const link = process.env.CLIENT_URL + `/forgot-password?user_id=${candidate._id}&token=${token}`
+    let link = process.env.CLIENT_URL + `/forgot-password?user_id=${candidate._id}&token=${token}`
 
-    //sendMail({ link: link }, 'reset-password.hbs', [candidate.email], 'single')
-
-    return link
+    //sendMail({ link }, 'reset-password.hbs', [candidate.email], 'single')
   }    
   
   async logout(refreshToken: string) {
     return await this.TokenService.removeToken(refreshToken)
   }
   
-  async update(new_user: UserFromClient, user: UserFromClient) {
+  async update(new_user: User | UserFromClient, user: User | UserFromClient) {
     return await this.UserModel.findByIdAndUpdate(user._id, new_user, {
       new: true,
       runValidators: true

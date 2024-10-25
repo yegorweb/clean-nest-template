@@ -11,6 +11,7 @@ declare global {
       
       JWT_ACCESS_SECRET: string
       JWT_REFRESH_SECRET: string
+      JWT_RESET_SECRET: string
       
       EMAIL: string
       EMAIL_PASSWORD: string    

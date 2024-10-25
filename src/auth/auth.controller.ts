@@ -2,7 +2,6 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards 
 import { Request, Response } from 'express';
 import RequestWithUser from 'src/types/request-with-user.type';
 import { UserFromClient } from 'src/user/interfaces/user-from-client.interface';
-import { User } from 'src/user/interfaces/user.interface';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 
@@ -16,7 +15,7 @@ export class AuthController {
 	@Post('registration')
 	async registration(
 		@Res() res: Response, 
-		@Body() user: User
+		@Body() user: Partial<UserFromClient>
 	) {
 		const userData = await this.AuthService.registration(user)
 
@@ -31,7 +30,7 @@ export class AuthController {
 				httpOnly: true, 
 				secure: eval(process.env.HTTPS) 
 			}
-		).json(userData)
+		).json(userData).send()
 	}
 	
 	@HttpCode(HttpStatus.OK)
@@ -54,7 +53,7 @@ export class AuthController {
 				httpOnly: true, 
 				secure: eval(process.env.HTTPS)
 			}
-		).json(userData)
+		).json(userData).send()
 	}
 	
 	@HttpCode(HttpStatus.OK)
@@ -78,7 +77,7 @@ export class AuthController {
 				httpOnly: true,
 				secure: eval(process.env.HTTPS)
 			}
-		).json(userData)
+		).json(userData).send()
 	}
 	
 	@HttpCode(HttpStatus.OK)
@@ -87,7 +86,7 @@ export class AuthController {
 		@Req() req: Request, 
 		@Res() res: Response, 
 	) {
-		const { refreshToken } = req.cookies
+		let { refreshToken } = req.cookies
 
 		await this.AuthService.logout(refreshToken)
 		res.clearCookie('refreshToken').send()
@@ -114,7 +113,7 @@ export class AuthController {
 				httpOnly: true,
 				secure: eval(process.env.HTTPS)
 			}
-		).json(userData)
+		).json(userData).send()
   }	
 
 	@UseGuards(AuthGuard)
@@ -122,9 +121,9 @@ export class AuthController {
 	@Post('update')
 	async update(
 		@Req() req: RequestWithUser,
-		@Body('user') new_user: UserFromClient
+		@Body() newUser: UserFromClient
 	) {
-		return await this.AuthService.update(new_user, req.user)
+		return await this.AuthService.update(newUser, req.user)
 	}
   
 	@HttpCode(HttpStatus.OK)
@@ -132,7 +131,6 @@ export class AuthController {
 	async sendResetLink(
 		@Body('email') email: string
 	) {
-		let link = await this.AuthService.sendResetLink(email)	
-		return link
+		await this.AuthService.sendResetLink(email)	
   }
 }
