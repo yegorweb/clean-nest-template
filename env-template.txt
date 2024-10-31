@@ -1,17 +1,21 @@
+# General settings
 PORT=4000
 HTTPS=false
-
-MONGO_URL=
 CLIENT_URL=http://localhost:3000
 
-# keys
+# Database
+MONGO_URL=
+
+# Password secrets
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
+JWT_RESET_SECRET=
 
-# mail
+# E-mail
 EMAIL=
 EMAIL_PASSWORD=
 
+# Yandex Cloud S3 Bucket
 YC_KEY_ID=
 YC_SECRET=
 YC_BUCKET_NAME=
