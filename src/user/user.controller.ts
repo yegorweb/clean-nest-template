@@ -1,13 +1,13 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { SomeAdminGuard } from 'src/admin/some_admin.guard';
 import ApiError from 'src/exceptions/errors/api-error';
 import { RolesService } from 'src/roles/roles.service';
 import RequestWithUser from 'src/types/request-with-user.type';
 import { UserFromClient } from './interfaces/user-from-client.interface';
 import { UserClass } from './schemas/user.schema';
 import { UserService } from './user.service';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -30,16 +30,26 @@ export class UserController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @UseGuards(SomeAdminGuard)
+  @UseGuards(AuthGuard)
   @Post('change-user')
   async changeUser(
     @Req() req: RequestWithUser,
-    @Body('user') user: UserFromClient
+    @Body('user') user: Partial<UserFromClient>
   ) {
+    if (req.user._id.toString() !== user._id)
+      throw ApiError.AccessDenied()
+    
     let subject_user = await this.UserModel.findById(user._id)
+
+    if (!subject_user)
+      throw ApiError.NotFound('Пользователь не найден')
     
-    // ... Защиты, проверки
-    
+    delete user._id
+    // delete user.email
+    delete user.password
+
+    // + проверки на роли !!!!
+
     await subject_user.updateOne(user, { runValidators: true })
   }
 }
