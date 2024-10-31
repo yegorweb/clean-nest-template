@@ -9,7 +9,7 @@ export class TokenClass {
     type: String, 
     required: true 
   })
-  token: string
+  refreshToken: string
 
   @Prop({
     type: SchemaTypes.ObjectId,

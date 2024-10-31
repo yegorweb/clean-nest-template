@@ -3,6 +3,6 @@ import { User } from "src/user/interfaces/user.interface"
 
 export interface PopulatedToken {
   _id: mongoose.Types.ObjectId
-  token: string
+  refreshToken: string
   user: User
 }
