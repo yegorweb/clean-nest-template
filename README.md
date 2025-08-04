@@ -29,5 +29,5 @@ npm run dev
 
 ```shell
 npm run build
-node dist/main.js
+npm run start:prod
 ```
