@@ -20,6 +20,8 @@ npm i
 - `DOMAIN`: основной домен приложения, например `vk.com` (не ставить поддомен)
 - `REDIS_URL`: connection string к Redis
 - `MONGO_URL`: connection string к базе данных MongoDB
+- `JWT_ACCESS_TOKEN_SECRET`: секрет к access токенам 
+- `JWT_REFRESH_TOKEN_SECRET`: секрет к refresh токенам
 
 # Разработка
 

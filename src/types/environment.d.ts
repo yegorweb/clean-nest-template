@@ -10,6 +10,8 @@ declare global {
       CLIENT_URLS: string
       REDIS_URL: string
       MONGO_URL: string
+      JWT_ACCESS_TOKEN_SECRET: string 
+      JWT_REFRESH_TOKEN_SECRET: string
     }
   }
 }
