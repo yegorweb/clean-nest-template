@@ -8,6 +8,7 @@ declare global {
       NODE_ENV?: string
       DOMAIN?: string
       CLIENT_URLS: string
+      REDIS_URL: string
     }
   }
 }

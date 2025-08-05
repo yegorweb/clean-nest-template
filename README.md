@@ -18,6 +18,7 @@ npm i
 - `CLIENT_URLS`: JSON массив со строками с url клиента, например `["http://localhost:3000","http://localhost:4000"]`
 - `HTTPS`: `true` если протокол TLS, иначе `false`
 - `DOMAIN`: основной домен приложения, например `vk.com` (не ставить поддомен)
+- `REDIS_URL`: connection string к Redis
 
 # Разработка
 
