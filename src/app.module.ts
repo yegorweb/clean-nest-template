@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { GlobalExceptionFilter } from './exceptions/global-exception.filter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
           blockDuration: 60*1000
         },
       ],
+      storage: new ThrottlerStorageRedisService(process.env.REDIS_URL),
     }),
   ],
   controllers: [AppController],
