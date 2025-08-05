@@ -10,6 +10,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TokenService } from './token/token.service';
 import { UserModule } from './user/user.module';
 import { CacheService } from './cache/cache.service';
+import { AuthModule } from './auth/auth.module';
 import { CryptoService } from './crypto/crypto.service';
 
 @Module({
@@ -29,6 +30,7 @@ import { CryptoService } from './crypto/crypto.service';
     }),
     MongooseModule.forRoot(process.env.MONGO_URL),
     UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
