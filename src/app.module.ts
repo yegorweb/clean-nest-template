@@ -7,6 +7,7 @@ import { GlobalExceptionFilter } from './exceptions/global-exception.filter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CryptoService } from './crypto/crypto.service';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       provide: APP_GUARD,
       useClass: ThrottlerGuard
     },
+    CryptoService,
   ],
 })
 export class AppModule {}
