@@ -9,6 +9,7 @@ declare global {
       DOMAIN?: string
       CLIENT_URLS: string
       REDIS_URL: string
+      MONGO_URL: string
     }
   }
 }
