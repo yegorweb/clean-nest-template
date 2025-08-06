@@ -5,21 +5,25 @@
 # Описание
 Это приложение на Nest
 
+# Требования
+
+Необходимы `node >= 20`, `MongoDB`, `Redis`
+
 # Перед запуском
 
-## Установка зависимостей
+### Установка зависимостей
 ```shell
 npm i
 ```
 
-## Переменные окружения
+### Переменные окружения
 Все переменные окружения прописывать в `.env`:
-- `PORT`: номер порта
-- `CLIENT_URLS`: JSON массив со строками с url клиента, например `["http://localhost:3000","http://localhost:4000"]`
-- `HTTPS`: `true` если протокол TLS, иначе `false`
-- `DOMAIN`: основной домен приложения, например `vk.com` (не ставить поддомен)
+- `PORT` (необ., по умол. `3000`): номер порта
+- `CLIENT_URLS` (необ.): JSON массив со строками с url клиента, например `["http://localhost:3000","http://localhost:4000"]`
+- `HTTPS` (необ., по умол. `false`): `true` если протокол TLS, иначе `false`
+- `DOMAIN` (необ.): основной домен приложения, например `vk.com` (не ставить поддомен)
 - `REDIS_URL`: connection string к Redis
-- `MONGO_URL`: connection string к базе данных MongoDB
+- `MONGO_URL`: connection string к MongoDB
 - `JWT_ACCESS_TOKEN_SECRET`: секрет к access токенам 
 - `JWT_REFRESH_TOKEN_SECRET`: секрет к refresh токенам
 
