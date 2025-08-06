@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { CacheService } from 'src/cache/cache.service';
 import { CryptoService } from 'src/crypto/crypto.service';
 import { AppError } from 'src/exceptions/errors/app-error';
 import { ValidationError } from 'src/exceptions/errors/validation-error';
@@ -16,6 +17,7 @@ export class AuthService {
     private UserService: UserService,
     private CryptoService: CryptoService,
     private TokenService: TokenService,
+    private CacheService: CacheService,
   ) {}
 
   async registerUser(user: Partial<UserFromClient>, roles=[]) {
@@ -33,7 +35,9 @@ export class AuthService {
       password,
       roles,
     })
-    await this.UserModel.create(user)
+    let createdUser = await this.UserModel.create(user)
+    delete (createdUser as any).password
+    this.CacheService.cacheUser(createdUser)
   }
   async login(email: string, password: string) {
     let user = await this.UserModel.findOne({ email }).lean()
@@ -46,6 +50,7 @@ export class AuthService {
       throw AppError.AccessDenied('Неверный пароль')
 
     delete (user as any).password
+    this.CacheService.cacheUser(user)
 
     let tokens = this.TokenService.generateTokens({ _id: user._id })
     await this.TokenService.saveRefreshToken(tokens.refreshToken, user._id)
