@@ -62,7 +62,7 @@ export class AuthService {
   }
   async refresh(oldRefreshToken: string) {
     if (!oldRefreshToken)
-      throw AppError.Unauthorized('Отсутствует rehresh token', { needLogin: true })
+      throw AppError.Unauthorized('Отсутствует refresh token', { needLogin: true })
     
     try {
       var tokenData = this.TokenService.validateRefreshToken(oldRefreshToken)
