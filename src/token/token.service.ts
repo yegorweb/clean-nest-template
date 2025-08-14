@@ -13,7 +13,7 @@ export class TokenService {
   ) {}
 
   generateTokens(payload: { _id: string | Types.ObjectId }) {
-    const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET, { expiresIn: '10s' })
+    const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET, { expiresIn: '15m' })
     const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN_SECRET, { expiresIn: '30d' })
 
     return { accessToken, refreshToken }
