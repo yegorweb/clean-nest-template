@@ -90,7 +90,7 @@ export class AuthService {
 
     this.TokenService.removeRefreshToken(oldRefreshToken, user._id)
     let tokens = this.TokenService.generateTokens({ _id: user._id })
-    this.TokenService.saveRefreshToken(tokens.refreshToken, user._id)
+    await this.TokenService.saveRefreshToken(tokens.refreshToken, user._id)
 
     return {
       ...tokens,
