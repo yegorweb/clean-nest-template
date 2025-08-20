@@ -25,10 +25,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message = 'Ошибка сервера'
     }
 
-    if (httpStatus == HttpStatus.TOO_MANY_REQUESTS) {
-      message = 'Слишком много запросов. Подождите 60 cек до разблокировки'
-    }
-
     const responseBody = {
       status: 'error',
       statusCode: httpStatus,
