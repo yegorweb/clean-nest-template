@@ -8,10 +8,7 @@ async function bootstrap() {
   let originFromEnv: string[] = []
   try {
     originFromEnv = JSON.parse(process.env.CLIENT_URLS)
-  } catch (error) {
-    console.error('Ошибка парсинга переменной окружения CLIENT_URLS:')
-    console.error(error)
-  }
+  } catch {}
   app.enableCors({
     origin: [...originFromEnv, ],
     credentials: true
