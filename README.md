@@ -39,3 +39,91 @@ npm run dev
 npm run build
 npm run start:prod
 ```
+
+# Важные моменты
+
+### Исключения
+Базовый класс ошибки — `AppError(message: string, status: number, additionalData: Record<string, any> = {})`. В нём также есть статические методы которые вызывают распространённые исключения.
+```ts
+throw new AppError('Не авторизован', 401, { needToRefreshToken: true })
+/* Response:
+{
+  "status": "error",
+  "statusCode": 401,
+  "message": "Вы не авторизованы",
+  "timestamp": "2025-09-15T13:49:57.477Z",
+  "path": "/user/my-name",
+  "needToRefreshToken": true
+}
+*/
+
+throw AppError.Unauthorizated()
+/* Response:
+{
+  "status": "error",
+  "statusCode": 401,
+  "message": "Вы не авторизованы",
+  "timestamp": "2025-09-15T13:49:57.477Z",
+  "path": "/user/my-name",
+}
+*/
+```
+
+На основе `AppError` можно создать классы других исключений, например: 
+```ts
+import { HttpStatus } from "@nestjs/common";
+import { AppError } from "./app-error";
+
+export class ValidationError extends AppError {
+  constructor(message: string, additionalData = {}) {
+    super(message, HttpStatus.BAD_REQUEST, additionalData)
+  }
+}
+```
+
+### Auth guards
+Есть строгая защита — `AuthGuard`, есть не строгая, которая пропускает без 401 ошибки, — `TryToGetUserGuard`.<br>
+Объект пользователя кладётся в `res.user`. Типы `Request` с объектом пользователя и возможно без него — `RequestWithUser` и `RequestWithUserOrNot` соответственно.
+```ts
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
+import { AuthGuard } from 'src/auth/auth.guard';
+import type { RequestWithUserOrNot } from 'src/types/request-with-user-or-not.type';
+import type { RequestWithUser } from 'src/types/request-with-user.type';
+
+@Controller('user')
+export class UserController {
+  @SkipThrottle()
+  @UseGuards(AuthGuard)
+  @Get('my-name-strict')
+  async myNameStrict(
+    @Req() req: RequestWithUser,
+  ) {
+    return req.user.fullname
+  }
+
+  @SkipThrottle()
+  @UseGuards(AuthGuard)
+  @Get('my-name')
+  async myName(
+    @Req() req: RequestWithUserOrNot,
+  ) {
+    return req.user ? req.user.fullname : "Вы кто вообще?"
+  }
+}
+```
+
+### Rate limiting
+По умолчанию на всех ставится ограничения `{ ttl: 30*1000, limit: 10, blockDuration: 60*1000 }`.<br>
+Для отключения ограничения поставьте декоратор `@SkipThrottle()` на функцию или класс.<br>
+Для изменения настроек ограничения на конкретной функции или классе можно поставить декоратор `@Throttle()`:
+```ts
+@Throttle({
+  default: {
+    ttl: 60*1000,
+    limit: 3,
+    blockDuration: 60*1000
+  }
+})
+```
+
