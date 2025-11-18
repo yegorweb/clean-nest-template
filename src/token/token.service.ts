@@ -27,6 +27,12 @@ export class TokenService {
   decodeToken(token: string): any {
     return jwt.decode(token)
   }
+	validateResetToken(token: string, secret: string): { _id: string } {
+		return jwt.verify(token, secret) as any
+	}
+	createResetToken(payload: { _id: string | Types.ObjectId }, secret: string) {
+		return jwt.sign(payload, secret, { expiresIn: '15m' })
+	}
   async saveRefreshToken(refreshToken: string, userId: string | Types.ObjectId) {
 		const key = `tokens:${userId}`
 		const hash = this.CryptoService.createSHA256(refreshToken)

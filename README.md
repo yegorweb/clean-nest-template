@@ -22,10 +22,12 @@ npm i
 - `CLIENT_URLS` (необ.): JSON массив со строками с url клиента, например `["http://localhost:3000","http://localhost:4000"]`
 - `HTTPS` (необ., по умол. `false`): `true` если протокол TLS, иначе `false`
 - `DOMAIN` (необ.): основной домен приложения, например `vk.com` (не ставить поддомен)
+- `SERVICE_URL`: публичный url адрес вашего сервиса, например `https://mysite.com`. В шаблоне используется для отправки ссылок на восстановление пароля
 - `REDIS_URL`: connection string к Redis
 - `MONGO_URL`: connection string к MongoDB
 - `JWT_ACCESS_TOKEN_SECRET`: секрет к access токенам 
 - `JWT_REFRESH_TOKEN_SECRET`: секрет к refresh токенам
+- `JWT_RESET_TOKEN_SECRET`: секрет к reset токенам
 
 # Разработка
 

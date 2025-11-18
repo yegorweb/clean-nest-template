@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
-import { SkipThrottle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import type { Request, Response } from 'express';
 
@@ -64,5 +64,31 @@ export class AuthController {
   ) {
     await this.AuthService.logout(req.cookies.refreshToken)
     res.clearCookie('refreshToken').status(200).send()
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  async resetPassword(
+		@Res() res: Response, 
+		@Body('password') password: string, 
+    @Body('token') token: string, 
+    @Body('user_id') user_id: string
+	) {
+		await this.AuthService.resetPassword(password, token, user_id)
+  }	
+  
+	@Throttle({
+    default: {
+      ttl: 60*1000,
+      limit: 2,
+      blockDuration: 60*1000
+    }
+  })
+	@HttpCode(HttpStatus.OK)
+	@Post('send-reset-password-link')
+	async sendResetLink(
+		@Body('email') email: string
+	) {
+		await this.AuthService.sendResetLink(email)	
   }
 }

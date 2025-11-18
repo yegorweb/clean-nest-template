@@ -103,4 +103,38 @@ export class AuthService {
       await this.TokenService.removeRefreshToken(refreshToken, payload._id)
     }
   }
+  async resetPassword(password: string, resetToken: string, userId: any) {
+    await this.validateEnterToResetPassword(userId, resetToken)
+    
+    let hashPassword = await this.CryptoService.createPasswordHash(password)
+    let user = await this.UserModel.findByIdAndUpdate(userId, { password: hashPassword })
+    if (!user) throw AppError.NotFound('Пользователь не найден')
+
+    await this.TokenService.removeUserRefreshTokens(user._id)
+  }
+  async validateEnterToResetPassword(userId: any, token: string) {
+    let user = await this.UserService.findById(userId)
+    if (!user) throw AppError.BadRequest('Пользователь не найден')
+
+    let secret = process.env.JWT_RESET_TOKEN_SECRET + user.password
+    try {
+      return this.TokenService.validateResetToken(token, secret)
+    } catch (error) {
+      if (error.name && error.name === 'TokenExpiredError') {
+        throw AppError.Unauthorized('Срок жизни токена истёк', { tokenNeedRefresh: true })
+      } else {
+        throw AppError.Unauthorized('Недействительный токен', { invalidToken: true })
+      }
+    }
+  }
+  async sendResetLink(email: string) {
+    let user = await this.UserModel.findOne({ email })
+    if (!user) throw AppError.BadRequest('Пользователь не найден')
+
+    let secret = process.env.JWT_RESET_TOKEN_SECRET + user.password
+    let token = this.TokenService.createResetToken({ _id: user._id }, secret)
+
+    let link = process.env.SERVICE_URL + `/reset-password?user_id=${user._id}&token=${token}`
+    // send email
+  }
 }
