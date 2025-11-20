@@ -69,7 +69,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('reset-password')
   async resetPassword(
-		@Res() res: Response, 
 		@Body('password') password: string, 
     @Body('token') token: string, 
     @Body('user_id') user_id: string
