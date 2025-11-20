@@ -12,7 +12,7 @@ export class CacheService {
     return await RedisClient.setex(`user:${user._id}`, USER_CACHE_TTL, JSON.stringify(user))
   }
   async getCachedUser(id: string | Types.ObjectId) {
-    return JSON.parse(await RedisClient.get(`user:${id}`) ?? 'null')
+    return JSON.parse(await RedisClient.get(`user:${id}`) ?? 'null') as UserFromClient
   }
   async clearUserCache(id: string | Types.ObjectId) {
     return await RedisClient.del(`user:${id}`)
