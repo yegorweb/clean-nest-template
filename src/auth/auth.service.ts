@@ -26,7 +26,7 @@ export class AuthService {
     if (await this.UserModel.exists({ email: user.email }))
       throw AppError.BadRequest('Пользователь с таким email уже существует')
 
-    if (!user.password || user.password.length < 8)
+    if (!user.password || user.password.length < 4)
       throw new ValidationError('Пароль слишком короткий')
 
     let password = await this.CryptoService.createPasswordHash(user.password)
