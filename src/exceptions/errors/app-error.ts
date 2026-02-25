@@ -17,7 +17,7 @@ export class AppError extends HttpException {
 	}
 
 	static AccessDenied(message = 'Отказано в доступе', additionalData = {}) {
-		return new AppError(message, HttpStatus.NOT_ACCEPTABLE, additionalData)
+		return new AppError(message, HttpStatus.FORBIDDEN, additionalData)
 	}
 
 	static NotFound(message = 'Не найдено', additionalData = {}) {
