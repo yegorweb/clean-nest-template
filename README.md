@@ -47,7 +47,7 @@ npm run start:prod
 ### Исключения
 Базовый класс ошибки — `AppError(message: string, status: number, additionalData: Record<string, any> = {})`. В нём также есть статические методы которые вызывают распространённые исключения.
 ```ts
-throw new AppError('Не авторизован', 401, { needToRefreshToken: true })
+throw new AppError('Вы не авторизованы', 401, { needToRefreshToken: true })
 /* Response:
 {
   "status": "error",
@@ -59,7 +59,7 @@ throw new AppError('Не авторизован', 401, { needToRefreshToken: tru
 }
 */
 
-throw AppError.Unauthorizated()
+throw AppError.Unauthorized()
 /* Response:
 {
   "status": "error",
